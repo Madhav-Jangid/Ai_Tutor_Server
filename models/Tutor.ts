@@ -11,6 +11,7 @@ export interface ITutor extends Document {
     pace: 'slow' | 'medium' | 'fast';
     studentSummary: string;
     roadmap: mongoose.Types.ObjectId;
+    chat: mongoose.Types.ObjectId;
     language: string;
     createdAt: Date;
 }
@@ -24,6 +25,11 @@ const tutorSchema: Schema = new mongoose.Schema({
     roadmap: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'StudyPlan',
+        required: false
+    },
+    chat: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Chat',
         required: false
     }, personality: {
         type: String,

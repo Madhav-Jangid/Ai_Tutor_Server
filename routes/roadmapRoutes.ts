@@ -14,7 +14,9 @@ import Task from '../models/Task';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms');
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+
+const { roadmapSchemaforGemini } = require('./ModelSchema/roadmapSchema');
 
 /**
  * Route to generate a study plan roadmap based on an uploaded syllabus image
@@ -22,21 +24,27 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--
  */
 router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) => {
     try {
-        // Check if an image file was uploaded
+        // Check if required data exists
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Extract deadline from request body
         const { deadline, tutor: tutorData } = req.body;
-        const tutor = JSON.parse(tutorData);
-        console.log('Received:', { deadline });
         if (!deadline) {
             return res.status(400).json({ error: 'Deadline is required' });
         }
 
-        // Initialize the generative AI model
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const tutor = JSON.parse(tutorData);
+
+        // Generate roadmap using AI
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: roadmapSchemaforGemini,
+            },
+        });
+
         const image = {
             inlineData: {
                 data: req.file.buffer.toString('base64'),
@@ -44,9 +52,8 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
             },
         };
 
-        const generateRoadmapPrompt = (tutor: any, deadline: string, imageType = "syllabus") => {
-            return `
-          Analyze the uploaded ${imageType} to determine if it contains a valid and structured ${tutor.subject} curriculum. If the document is invalid, unclear, or missing key details, respond with exactly: "Please upload a valid ${tutor.subject} ${imageType}."
+        const roadmapPrompt = `
+          Analyze the uploaded syllabus to determine if it contains a valid and structured ${tutor.subject} curriculum. If the document is invalid, unclear, or missing key details, respond with exactly: "Please upload a valid ${tutor.subject} syllabus."
           
           **Step 1: Curriculum Extraction**  
           - Identify and extract ONLY the relevant ${tutor.subject} content from the uploaded document.  
@@ -79,7 +86,6 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
         - **subject** (String, Required): The name of the subject.
         - **deadline** (Date, Required): The final date for completing the study plan.
         - Extract **preferred study time** from **${tutor.studentSummary}** and ensure tasks align with this time.
-
         
         #### **2. Roadmap Structure**
         The **roadmap** object defines the entire study plan, including topics, schedules, strategies, and progress tracking.
@@ -148,7 +154,7 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
         
         ##### **2.8 Tutor Support (Optional)**
         If a tutor is involved, provide details:
-        - **tutor_name** (String, Optional): Tutor’s name.
+        - **tutor_name** (String, Optional): Tutor's name.
         - **contact** (String, Optional): Contact details.
         - **sessions** (Array, Optional): List of tutoring sessions, each containing:
           - **date** (Date, Optional): Session date.
@@ -163,16 +169,10 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
         - Ensure the JSON is well-formatted and directly parseable by 'JSON.parse()'.
         - Populate all schema fields with appropriate values.
         - If the deadline is short, prioritize essential topics and suggest intensive study methods.
-        - **Use the tutor’s preferred communication style (${tutor.personality})** to keep the student engaged.  
+        - **Use the tutor's preferred communication style (${tutor.personality})** to keep the student engaged.  
         - Adapt the study plan based on the student's strengths, weaknesses, and preferred learning methods from **tutor.studentSummary**.
-          `;
-        };
+        `;
 
-
-
-        // Example Usage:
-        const roadmapPrompt = generateRoadmapPrompt(tutor, deadline);
-        // const systemPrompt = generateSystemPrompt(tutor);
         const result = await model.generateContent([{ text: roadmapPrompt }, image]);
         const rawText = await result.response.text();
 
@@ -181,67 +181,40 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
             return res.status(400).json({ error: `Please upload a valid ${tutor.subject} syllabus.` });
         }
 
-        let studyPlan;
+        // Process AI response
         const cleanedText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
 
-        // Attempt to parse the raw AI response as JSON
         try {
-            studyPlan = JSON.parse(cleanedText);
-        } catch (parseError) {
-            if (parseError instanceof Error) {
-                console.log('Initial JSON parse failed:', parseError.message);
-            } else {
-                console.log('Initial JSON parse failed:', parseError);
-            }
-
-            // If parsing fails, attempt to repair the JSON
+            // Parse JSON response, attempt repair if needed
+            let studyPlan;
             try {
+                studyPlan = JSON.parse(cleanedText);
+            } catch (parseError) {
+                console.log('Initial JSON parse failed, attempting repair');
                 const repairedText = jsonrepair(cleanedText);
                 studyPlan = JSON.parse(repairedText);
-            } catch (repairError) {
-                if (repairError instanceof Error) {
-                    console.error('JSON repair failed:', repairError.message);
-                } else {
-                    console.error('JSON repair failed:', repairError);
-                }
-                return res.status(500).json({
-                    error: 'AI generated an invalid study plan',
-                    rawResponse: rawText,
-                });
             }
-        }
 
-        // Validate the study plan against the schema
-        try {
+            // Create and validate model
             const validatedPlan = new StudyPlan(studyPlan);
             await validatedPlan.validate();
+
             return res.status(200).json({ roadmap: validatedPlan });
-        } catch (validationError) {
-            if (validationError instanceof Error) {
-                console.error('Schema validation failed:', validationError.message);
-                return res.status(500).json({
-                    error: 'Generated study plan does not conform to the schema',
-                    details: validationError.message,
-                });
-            } else {
-                console.error('Schema validation failed:', validationError);
-                return res.status(500).json({
-                    error: 'Generated study plan does not conform to the schema',
-                    details: 'Unknown error',
-                });
-            }
+        } catch (error) {
+            console.error('Error processing AI response:', error);
+            return res.status(500).json({
+                error: 'Failed to process the generated study plan',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     } catch (error) {
-        // Handle any other unexpected errors
-        if (error instanceof Error) {
-            console.error('Error generating roadmap:', error.message);
-        } else {
-            console.error('Error generating roadmap:', error);
-        }
-        return res.status(500).json({ error: 'Failed to generate roadmap' });
+        console.error('Error generating roadmap:', error);
+        return res.status(500).json({
+            error: 'Failed to generate roadmap',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 });
-
 
 
 const getCurrentDateParts = () => {
