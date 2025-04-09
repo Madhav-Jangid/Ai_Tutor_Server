@@ -108,13 +108,15 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
         ##### **2.3 Weekly Study Plans**
         A structured breakdown of weekly study goals:
         - **week** (Number, Required): Week number.
-        - **dates** (String, Required): Duration of the week.
+        - **dates** (String, Required): Duration of the week ** must add these dates **.
         - **goals** (Array, Required): List of learning objectives.
         - **milestones** (Array, Required): Key achievements expected.
         - **activities** (Array, Required): Tasks to complete each week, including:
           - **title** (String, Required): Name of the activity.
           - **description** (String, Required): Details of the task.
           - **estimated_time** (String, Required): Expected time required.
+        Make sure each field is clearly filled in, and that the weekly plan is actionable and student-friendly.
+
         
         ##### **2.4 Daily Study Plan**
         A more detailed breakdown of daily tasks:
