@@ -41,7 +41,7 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
             model: "gemini-2.0-flash",
             generationConfig: {
                 responseMimeType: "application/json",
-                responseSchema: roadmapSchemaforGemini,
+                // responseSchema: roadmapSchemaforGemini,
             },
         });
 
@@ -115,8 +115,8 @@ router.post('/makeRoadmap', upload.single('image'), async (req: any, res: any) =
           - **title** (String, Required): Name of the activity.
           - **description** (String, Required): Details of the task.
           - **estimated_time** (String, Required): Expected time required.
-        Make sure each field is clearly filled in, and that the weekly plan is actionable and student-friendly.
-
+        ** make sure you add all the required feilds **
+ 
         
         ##### **2.4 Daily Study Plan**
         A more detailed breakdown of daily tasks:
