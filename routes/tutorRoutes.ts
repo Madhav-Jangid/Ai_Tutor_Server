@@ -111,7 +111,7 @@ router.get('/info/:_id', async (req: any, res: any) => {
 
 
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms' as string);
 
 // POST route to generate and save student summary
 router.post('/generateSummary/:_id', async (req: any, res: any) => {

@@ -5,7 +5,7 @@ import User from '../models/User';
 import Task from '../models/Task';
 import Tutor from '../models/Tutor';
 // Initialize the Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms' as string);
 
 export interface ChatMessage {
     role: 'user' | 'model';

@@ -31,7 +31,7 @@ const { studyContnetSchema } = require('./ModelSchema/studyContentSchema');
 const router = express.Router();
 
 // Initialize Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms' as string);
 
 
 /**

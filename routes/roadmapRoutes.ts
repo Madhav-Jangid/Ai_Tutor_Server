@@ -14,7 +14,7 @@ import Task from '../models/Task';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms' || 'AIzaSyBbVe--mpuyOccBdMEWErO1FrIfSUTqXms' as string);
 
 const { roadmapSchemaforGemini } = require('./ModelSchema/roadmapSchema');
 
