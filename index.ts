@@ -39,6 +39,10 @@ app.use(express.json());
 
 connectDB();
 
+app.get('/', (req, res) => {
+  res.send('Server is running');
+});        
+
 app.use('/api/auth', authRoutes);
 app.use('/api/ai-agent', roadmapRoutes);
 app.use('/api/tutor', tutorRoutes);
