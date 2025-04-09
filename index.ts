@@ -43,6 +43,11 @@ app.get('/', (req, res) => {
   res.send('Server is running');
 });        
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+
 app.use('/api/auth', authRoutes);
 app.use('/api/ai-agent', roadmapRoutes);
 app.use('/api/tutor', tutorRoutes);
