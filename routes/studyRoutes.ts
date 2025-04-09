@@ -151,7 +151,7 @@ router.post('/generate-topic-content', async (req: any, res: any) => {
             model: "gemini-2.0-flash",
             generationConfig: {
                 responseMimeType: "application/json",
-               // responseSchema: studyContnetSchema,
+                responseSchema: studyContnetSchema,
             },
         });
 
