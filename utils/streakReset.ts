@@ -2,7 +2,8 @@ import cron from 'node-cron';
 import User from '../models/User';  // Adjust path as needed
 
 // Schedule task to run at 12:00 AM every day
-cron.schedule('0 0 * * *', async () => {
+// cron.schedule('0 0 * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     console.log('Running Streak Reset Job...');
 
     try {

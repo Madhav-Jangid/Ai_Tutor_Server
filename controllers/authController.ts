@@ -11,29 +11,30 @@ interface SignupBody {
     studentId?: string;
 }
 
-export const signup = async (req: Request<{}, {}, SignupBody>, res: Response): Promise<void> => {
+export const signup = async (req: any, res: any): Promise<void> => {
     try {
         const { name, email, password, role, studentId } = req.body;
 
         if (role === 'parent' && !studentId) {
-            res.status(400).json({ message: 'Student ID is required for parent role' });
-            return;
+            return res.status(400).json({ message: 'Student ID is required for parent role' });
         }
-        console.log(name, email, password, role, studentId);
 
         const hashedPassword = await hashPassword(password);
+
         const user: IUser = await User.create({
             name,
             email,
             password: hashedPassword,
             role,
-            studentId: role === 'parent' ? studentId : null
+            children: role === 'parent' ? [studentId] : [],
         });
 
         res.status(201).json({ message: 'User created successfully', user });
+
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }
+
 };
 
 interface LoginBody {

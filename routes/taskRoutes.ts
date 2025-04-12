@@ -137,6 +137,7 @@ async function updateUserStreak(userId: any): Promise<{
 }
 
 // Implementation in your route handler
+// Implementation in your route handler
 router.post('/save-quiz-marks', async (req: any, res: any) => {
     try {
         const { taskId, quizMarks, quizMarksOutOf } = req.body;
@@ -166,13 +167,29 @@ router.post('/save-quiz-marks', async (req: any, res: any) => {
             updatedTask.month === todayMonth &&
             updatedTask.day === todayDay;
 
-
         const userId = updatedTask.userId;
-        let streakResult: any;
-        if (isTodayTask) streakResult = await updateUserStreak(userId);
+
+        // Initialize default streak response
+        let streakResult = {
+            currentStreak: 0,
+            longestStreak: 0,
+            updated: false
+        };
+
+        // Only update streak if this is today's task
+        if (isTodayTask) {
+            streakResult = await updateUserStreak(userId);
+        } else {
+            // If not today's task, fetch current streak information without updating
+            const user = await User.findById(userId);
+            if (user && user.role === 'student') {
+                streakResult.currentStreak = user.currentStreak || 0;
+                streakResult.longestStreak = user.longestStreak || 0;
+            }
+        }
 
         res.json({
-            message: streakResult?.updated
+            message: streakResult.updated
                 ? 'Quiz marks saved successfully & streak updated'
                 : 'Quiz marks saved successfully',
             task: {

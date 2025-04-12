@@ -32,6 +32,7 @@ export interface IStudyPlan extends Document {
         daily_study_plan: {
             date: Date;
             tasks: {
+                taskInfo?: mongoose.Types.ObjectId; // Add this
                 title: string;
                 description: string;
                 estimated_time: string;
@@ -59,6 +60,7 @@ export interface IStudyPlan extends Document {
             completed_topics: string[];
             pending_topics: string[];
             assessments: {
+                topic: string
                 date: Date;
                 score: number;
             }[];
@@ -117,6 +119,7 @@ const StudyPlanSchema = new Schema<IStudyPlan>({
                 date: { type: Date, required: true },
                 tasks: [
                     {
+                        taskInfo: { type: Schema.Types.ObjectId, ref: 'Task' },
                         title: { type: String, required: true },
                         description: { type: String, required: true },
                         estimated_time: { type: String, required: true },
