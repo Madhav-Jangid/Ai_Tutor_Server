@@ -16,9 +16,9 @@ export const getDailyTasks = async (
         const tasks = await Task.find({
             userId: studentId,
             tutorId: tutorId,
-            year,
-            month,
-            day,
+            //year,
+          //  month,
+         //   day,
         });
 
 
