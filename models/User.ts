@@ -14,7 +14,7 @@ export interface IUser extends Document {
     createdAt: Date;
     currentStreak?: number;
     longestStreak?: number;
-    lastActivity?: Date;
+    // lastActivity?: Date;
 }
 
 
