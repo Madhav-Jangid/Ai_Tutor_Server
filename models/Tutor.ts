@@ -12,6 +12,7 @@ export interface ITutor extends Document {
     studentSummary: string;
     roadmap: mongoose.Types.ObjectId;
     chat: mongoose.Types.ObjectId;
+    chatWithParent: mongoose.Types.ObjectId;
     language: string;
     createdAt: Date;
 }
@@ -31,7 +32,13 @@ const tutorSchema: Schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chat',
         required: false
-    }, personality: {
+    },
+    chatWithParent: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Chat',
+        required: false
+    },
+    personality: {
         type: String,
         enum: ['friendly', 'strict', 'witty', 'default'],
         default: 'default'

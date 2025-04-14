@@ -75,7 +75,6 @@ export const generateStudyContent = async (req: any, res: any) => {
         } catch (parseError) {
             console.log('Initial JSON parse failed:', parseError instanceof Error ? parseError.message : parseError);
 
-            // Attempt to repair the JSON
             try {
                 const repairedText = jsonrepair(cleanedText);
                 studyPlan = JSON.parse(repairedText);

@@ -148,7 +148,6 @@ export const generateStudenntSummary = async (req: any, res: any) => {
             alert('Invalid tutor ID');
             return;
         }
-        // console.log("Summary :- " + studentSummaryString);
 
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             console.log("Invalid id");

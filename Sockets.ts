@@ -4,10 +4,9 @@ import Tutor from './models/Tutor';
 import { processWithAI } from './utils/processWithAI';
 import type { Server } from 'socket.io';
 
-
 const activeConnections = new Map();
-export default function initSockets(io: Server) {
 
+export default function initSockets(io: Server) {
     io.on('connection', (socket: any) => {
         let currentRooms = new Set();
 
@@ -19,18 +18,16 @@ export default function initSockets(io: Server) {
 
             socket.join(roomId);
             currentRooms.add(roomId);
-
             socket.to(roomId).emit('user-joined', { socketId: socket.id });
-
             socket.emit('room-joined', { roomId });
         });
 
-        socket.on('leave-room', ((roomId: string) => {
+        socket.on('leave-room', (roomId: string) => {
             if (typeof roomId === 'string' && roomId.trim()) {
                 socket.leave(roomId);
                 currentRooms.delete(roomId);
             }
-        }));
+        });
 
         socket.on('send-message', async (data: any) => {
             try {
@@ -39,6 +36,7 @@ export default function initSockets(io: Server) {
                     return;
                 }
 
+
                 const { roomId, message, userId, tutorId, role, chatId } = data;
 
                 if (!roomId || !message || !userId || !tutorId || !role) {
@@ -46,20 +44,25 @@ export default function initSockets(io: Server) {
                     return;
                 }
 
-                let chat;
-                if (chatId) {
-                    chat = await Chat.findById(chatId);
-                }
+                const tutor = await Tutor.findById(tutorId).populate('studentId');
+
+
+                const studentId = tutor?.studentId;
+
+
+                const resolvedStudentId = role === 'parent' ? studentId : userId;
+
+                let chat = chatId ? await Chat.findById(chatId) : null;
 
                 if (!chat) {
                     chat = new Chat({
-                        name: `${userId}-${tutorId}`,
+                        name: `${resolvedStudentId}-${tutorId}`,
                         userId,
+                        studentId: resolvedStudentId,
                         tutorId,
                         messages: []
                     });
                     await chat.save();
-
                     socket.emit('chat-created', { chatId: chat._id });
                 }
 
@@ -88,10 +91,10 @@ export default function initSockets(io: Server) {
                     io.to(roomId).emit('tutor-typing', { tutorId, isTyping: true });
 
                     try {
-                        const aiResponse = await processWithAI(message, userId, tutorId, role);
+                        const aiResponse = await processWithAI(message, userId, tutorId, role, studentId, chatId, io, roomId);
 
                         const aiMessage: any = new Message({
-                            chatId: chat._id,
+                            chatId,
                             senderId: tutorId,
                             senderType: 'tutor',
                             content: aiResponse,
@@ -105,12 +108,21 @@ export default function initSockets(io: Server) {
 
                         const tutor = await Tutor.findById(tutorId);
 
-                        if (tutor && !tutor.chat) {
-                            await Tutor.findByIdAndUpdate(
-                                tutorId,
-                                { chat: chat._id },
-                                { new: true }
-                            );
+
+                        if (tutor) {
+                            if (role === 'parent' && !tutor.chatWithParent) {
+                                await Tutor.findByIdAndUpdate(
+                                    tutorId,
+                                    { chatWithParent: chat._id },
+                                    { new: true }
+                                );
+                            } else if (role === 'student' && !tutor.chat) {
+                                await Tutor.findByIdAndUpdate(
+                                    tutorId,
+                                    { chat: chat._id },
+                                    { new: true }
+                                );
+                            }
                         }
 
                         io.to(roomId).emit('tutor-typing', { tutorId, isTyping: false });
@@ -123,7 +135,6 @@ export default function initSockets(io: Server) {
                             timestamp: aiMessage.createdAt,
                         });
 
-
                     } catch (aiError: any) {
                         io.to(roomId).emit('tutor-typing', { tutorId, isTyping: false });
                         io.to(roomId).emit('error', {
@@ -132,6 +143,7 @@ export default function initSockets(io: Server) {
                         });
                     }
                 }
+
             } catch (error: any) {
                 socket.emit('error', {
                     message: 'Failed to process message',
@@ -151,7 +163,6 @@ export default function initSockets(io: Server) {
         });
     });
 
-
     process.on('SIGINT', () => {
         console.log('Shutting down server...');
         io.close(() => {
@@ -159,4 +170,6 @@ export default function initSockets(io: Server) {
             process.exit(0);
         });
     });
+
+    return io;
 }

@@ -19,7 +19,6 @@ const ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
 
 export const makeRoadmap = async (req: any, res: any) => {
 
-    console.log('Workin on roadmap');
 
     const { deadline, tutor: tutorData, socketId } = req.body;
 

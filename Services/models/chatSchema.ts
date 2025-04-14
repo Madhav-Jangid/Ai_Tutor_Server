@@ -18,14 +18,14 @@ const chatSchema = {
                     description: "True if access to tools is required.",
                     nullable: false,
                 },
-                getDailyTasks: {
+                getUsersTasks: {
                     type: SchemaType.BOOLEAN,
                     description: "True if daily tasks of the user are needed.",
                     nullable: true,
                 },
-                getAllTaskOfRoadmap: {
+                getUsersRoadmap: {
                     type: SchemaType.BOOLEAN,
-                    description: "True if all tasks of the user's roadmap are needed.",
+                    description: "True if user's roadmap is needed.",
                     nullable: true,
                 }
             },

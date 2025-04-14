@@ -2,47 +2,56 @@ import Tutor from "../models/Tutor";
 import User from "../models/User";
 import geminiServices from "../Services/geminiServices";
 
+/**
+ * Process a message with the AI based on role and user/tutor context
+ */
 export async function processWithAI(
     message: string,
     userId: string,
     tutorId: string,
-    role: 'student' | 'parent'
+    role: 'student' | 'parent',
+    studentId?: string,
+    chatId?: string,
+    io?: any,
+    roomId?: string,
 ): Promise<string> {
     try {
-        // Validate inputs
         if (!message || typeof message !== 'string') {
             throw new Error('Invalid message');
         }
 
-        if (!userId || !tutorId) {
-            throw new Error('Missing user or tutor ID');
+        if (!tutorId || (!userId && !studentId)) {
+            throw new Error('Missing user or tutor ID ');
         }
 
-        // Validate user and tutor existence
+        // if (!chatId) {
+        //     throw new Error('Missing chat id');
+        // }
+
+        const finalUserId = role === 'parent' ? studentId! : userId;
+
+        // Fetch student (actual user) and tutor
         const [user, tutor] = await Promise.all([
-            User.findById(userId),
+            User.findById(finalUserId),
             Tutor.findById(tutorId)
         ]);
 
         if (!user) {
-            throw new Error(`User not found: ${userId}`);
+            throw new Error(`User not found: ${finalUserId}`);
         }
 
         if (!tutor) {
             throw new Error(`Tutor not found: ${tutorId}`);
         }
 
-        // Ensure the role is valid
-        if (role !== 'student' && role !== 'parent') {
-            throw new Error(`Invalid role: ${role}`);
-        }
-
-        // Process message with AI service
         const aiResponse = await geminiServices.processMessage(
             message,
             userId,
             tutorId,
-            role
+            role,
+            chatId,
+            io,
+            roomId
         );
 
         return aiResponse || "I don't have a response at this moment.";

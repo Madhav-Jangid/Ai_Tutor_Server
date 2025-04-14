@@ -10,8 +10,7 @@ router.post('/get-task', async (req: any, res: any) => {
     try {
         const { year, month, userId } = req.body;
 
-        // const userId = (req as any).user?.id; // Adjust based on your authentication middleware
-
+ 
         if (!userId) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
@@ -28,7 +27,6 @@ router.post('/get-task', async (req: any, res: any) => {
             })
             .select('');
 
-        // Transform tasks into the format expected by the client
         const transformedTasks = tasks.map(task => ({
             title: task.title,
             year: task.year,

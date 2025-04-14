@@ -14,7 +14,7 @@ export interface IUser extends Document {
     createdAt: Date;
     currentStreak?: number;
     longestStreak?: number;
-    // lastActivity?: Date;
+    lastActivity?: Date;
 }
 
 
@@ -49,5 +49,6 @@ const userSchema: Schema = new mongoose.Schema(
     { timestamps: true }
 );
 
+const User = mongoose.models.User || mongoose.model<IStudentUser | IParentUser>('User', userSchema);
 
-export default mongoose.model<IStudentUser | IParentUser>('User', userSchema);
+export default User;
