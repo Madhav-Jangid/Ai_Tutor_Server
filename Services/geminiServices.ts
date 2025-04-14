@@ -207,21 +207,21 @@ class GeminiService {
                     messageFromAi.message += `\n\n ${messageContent}`
 
 
-                    console.log(messageFromAi.message);
+                    // console.log(messageFromAi.message);
 
-                    const result = await chat.sendMessage(messageFromAi.message);
-                    const rawText = result.response.text().trim();
-
-
-
-                    let cleanJson = rawText;
-                    if (rawText.includes("```json")) {
-                        cleanJson = rawText.replace(/```json\s*|\s*```/g, '');
-                    }
-                    let finalMessageFromAi = JSON.parse(cleanJson);
+                    // const result = await chat.sendMessage(messageFromAi.message);
+                    // const rawText = result.response.text().trim();
 
 
-                    messageFromAi.message += `\n\nAlright, based on the above details, here's the conclusion:\n\n${finalMessageFromAi.message}`;
+
+                    // let cleanJson = rawText;
+                    // if (rawText.includes("```json")) {
+                    //     cleanJson = rawText.replace(/```json\s*|\s*```/g, '');
+                    // }
+                    // let finalMessageFromAi = JSON.parse(cleanJson);
+
+
+                    // messageFromAi.message += `\n\nAlright, based on the above details, here's the conclusion:\n\n${finalMessageFromAi.message}`;
 
 
 
@@ -276,21 +276,21 @@ class GeminiService {
                         messageFromAi.message += `\n\n ${messageContent}`
 
 
-                        console.log(messageFromAi.message);
+                        // console.log(messageFromAi.message);
 
-                        const result = await chat.sendMessage(messageFromAi.message);
-                        const rawText = result.response.text().trim();
-
-
-
-                        let cleanJson = rawText;
-                        if (rawText.includes("```json")) {
-                            cleanJson = rawText.replace(/```json\s*|\s*```/g, '');
-                        }
-                        let finalMessageFromAi = JSON.parse(cleanJson);
+                        // const result = await chat.sendMessage(messageFromAi.message);
+                        // const rawText = result.response.text().trim();
 
 
-                        messageFromAi.message += `\n\nAlright, based on the above details, here's the conclusion:\n\n${finalMessageFromAi.message}`;
+
+                        // let cleanJson = rawText;
+                        // if (rawText.includes("```json")) {
+                        //     cleanJson = rawText.replace(/```json\s*|\s*```/g, '');
+                        // }
+                        // let finalMessageFromAi = JSON.parse(cleanJson);
+
+
+                        // messageFromAi.message += `\n\nAlright, based on the above details, here's the conclusion:\n\n${finalMessageFromAi.message}`;
 
 
                     } catch (error) {
