@@ -3,6 +3,7 @@ import Chat from './models/Chats';
 import Tutor from './models/Tutor';
 import { processWithAI } from './utils/processWithAI';
 import type { Server } from 'socket.io';
+import mongoose from 'mongoose';
 
 const activeConnections = new Map();
 
@@ -54,7 +55,7 @@ export default function initSockets(io: Server) {
                 const resolvedStudentId = role === 'parent' ? studentId : userId;
 
                 // Find or create chat
-                let chat = null;
+                let chat: any = null;
                 if (chatId) {
                     chat = await Chat.findById(chatId);
                 }
@@ -119,14 +120,16 @@ export default function initSockets(io: Server) {
                     io.to(roomId).emit('tutor-typing', { tutorId, isTyping: true });
 
                     try {
-                        // Use chat._id consistently for AI processing
+                        // Convert ObjectId to string for AI processing
+                        const chatIdString = chat._id.toString();
+                        
                         const aiResponse = await processWithAI(
                             message, 
                             userId, 
                             tutorId, 
                             role, 
                             resolvedStudentId, 
-                            chat._id.toString(), 
+                            chatIdString, 
                             io, 
                             roomId
                         );
@@ -196,4 +199,4 @@ export default function initSockets(io: Server) {
     });
 
     return io;
-                    }
+                  }
